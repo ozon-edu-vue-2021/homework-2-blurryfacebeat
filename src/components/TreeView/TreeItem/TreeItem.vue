@@ -1,6 +1,6 @@
 <template>
   <li>
-    <div class="item-container" @click="itemClickHandler(propData.name)">
+    <div :class="['item-container']" @click="itemClickHandler(propData.name)" ref="tree-item">
       <img class="item-icon" :style="depthMargin" :src="iconItem" alt="icon">
       <component
           class="item-name"
@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { eventBus } from "@/main";
 import icons from "@/assets/icons";
 
 export default {
@@ -36,15 +37,26 @@ export default {
     depth: {
       type: Number,
       default: 0
+    },
+    idx: {
+      type: Number
     }
   },
   data() {
     return {
-      opened: false
+      opened: false,
+      activeItem: ''
     }
+  },
+  mounted() {
+    this.setFolderOpenByLink();
+    eventBus.$on('removeActiveClass', () => {
+      this.$refs["tree-item"]?.classList.remove('active');
+    });
   },
   methods: {
     itemClickHandler(query) {
+      this.setItemActive();
       this.setFolderOpened();
       this.setURLQuery(query);
     },
@@ -53,22 +65,26 @@ export default {
       if (this.propData.type === 'directory') this.opened = !this.opened;
     },
 
+    setItemActive() {
+      if (this.propData.type !== 'directory') {
+        eventBus.$emit('removeActiveClass');
+        this.$refs["tree-item"]?.classList.add('active');
+      }
+    },
+
     setURLQuery(query) {
       if (this.propData.type === 'directory') {
         const oldUrl = `http://${window.location.href.split('/')[2]}`;
         const newUrl = new URL(oldUrl);
 
         newUrl.searchParams.append('folder', query);
-        window.history.pushState('', 'folder', newUrl.href)
+        window.history.pushState('', 'folder', newUrl.href);
       }
     },
 
     setFolderOpenByLink() {
       if (this.urlQueryParams === this.propData.name) this.opened = true;
     }
-  },
-  mounted() {
-    this.setFolderOpenByLink();
   },
   computed: {
     depthMargin() {
@@ -89,6 +105,10 @@ export default {
 
     urlQueryParams() {
       return location.search.split('=')[1];
+    },
+
+    activeItemClass() {
+      return this.propData.name === this.activeItem ? 'active' : '';
     }
   }
 }
@@ -96,6 +116,8 @@ export default {
 
 <style scoped lang="css">
 .item-container {
+  max-width: max-content;
+  padding: 0 15px;
   user-select: none;
 
   cursor: pointer;
@@ -108,6 +130,11 @@ export default {
 
 .item-container:active .item-name {
   color: #3c797b;
+}
+
+.item-container.active {
+  background-color: rgba(55, 110, 112, 0.3);
+  border-radius: 10px;
 }
 
 .item-icon {

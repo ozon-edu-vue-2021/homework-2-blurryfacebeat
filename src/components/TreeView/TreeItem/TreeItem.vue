@@ -66,20 +66,16 @@ export default {
     },
 
     setItemActive() {
-      if (this.propData.type !== 'directory') {
-        eventBus.$emit('removeActiveClass');
-        this.$refs["tree-item"]?.classList.add('active');
-      }
+      eventBus.$emit('removeActiveClass');
+      this.$refs["tree-item"]?.classList.add('active');
     },
 
     setURLQuery(query) {
-      if (this.propData.type === 'directory') {
-        const oldUrl = `http://${window.location.href.split('/')[2]}`;
-        const newUrl = new URL(oldUrl);
+      const oldUrl = `http://${window.location.href.split('/')[2]}`;
+      const newUrl = new URL(oldUrl);
 
-        newUrl.searchParams.append('folder', query);
-        window.history.pushState('', 'folder', newUrl.href);
-      }
+      newUrl.searchParams.append('folder', query);
+      window.history.pushState('', 'folder', newUrl.href);
     },
 
     setFolderOpenByLink() {
@@ -122,6 +118,7 @@ export default {
 
   cursor: pointer;
   outline: none;
+  border: 1px solid transparent;
 }
 
 .item-container:hover .item-name {
@@ -135,6 +132,7 @@ export default {
 .item-container.active {
   background-color: rgba(55, 110, 112, 0.3);
   border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
 .item-icon {
